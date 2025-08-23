@@ -154,6 +154,7 @@ impl TreeSitterData {
             chunks,
         }
     }
+    encoding: &'static dyn encoding::Encoding,
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
@@ -1084,6 +1085,7 @@ impl Buffer {
             has_conflict: false,
             change_bits: Default::default(),
             _subscriptions: Vec::new(),
+            encoding: encoding::all::UTF_8,
         }
     }
 
