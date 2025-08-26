@@ -11,7 +11,8 @@ use async_compression::futures::bufread::GzipDecoder;
 use async_tar::Archive;
 use client::ExtensionProvides;
 use client::{Client, ExtensionMetadata, GetExtensionsResponse, proto, telemetry::Telemetry};
-use collections::{BTreeMap, BTreeSet, HashSet, btree_map};
+use collections::{BTreeMap, BTreeSet, HashMap, HashSet, btree_map};
+use encoding::all::UTF_8;
 pub use extension::ExtensionManifest;
 use extension::extension_builder::{CompileExtensionOptions, ExtensionBuilder};
 use extension::{
@@ -20,6 +21,7 @@ use extension::{
     ExtensionLanguageServerProxy, ExtensionSlashCommandProxy, ExtensionSnippetProxy,
     ExtensionThemeProxy,
 };
+use fs::encodings::EncodingWrapper;
 use fs::{Fs, RemoveOptions};
 use futures::future::join_all;
 use futures::{
@@ -1499,10 +1501,15 @@ impl ExtensionStore {
             }
 
             if let Ok(index_json) = serde_json::to_string_pretty(&index) {
-                fs.save(&index_path, &index_json.as_str().into(), Default::default())
-                    .await
-                    .context("failed to save extension index")
-                    .log_err();
+                fs.save(
+                    &index_path,
+                    &Rope::from_str(&index_json, &executor),
+                    Default::default(),
+                    EncodingWrapper::new(UTF_8),
+                )
+                .await
+                .context("failed to save extension index")
+                .log_err();
             }
 
             log::info!("rebuilt extension index in {:?}", start_time.elapsed());
@@ -1671,6 +1678,7 @@ impl ExtensionStore {
                     &tmp_dir.join(EXTENSION_TOML),
                     &Rope::from(manifest_toml),
                     language::LineEnding::Unix,
+                    EncodingWrapper::new(UTF_8),
                 )
                 .await?;
             } else {
