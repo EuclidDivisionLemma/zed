@@ -2256,6 +2256,8 @@ mod tests {
     use editor::{
         DisplayPoint, Editor, MultiBufferOffset, SelectionEffects, display_map::DisplayRow,
     };
+    use encoding::all::UTF_8;
+    use fs::encodings::EncodingWrapper;
     use gpui::{
         Action, AnyWindowHandle, App, AssetSource, BorrowAppContext, TestAppContext, UpdateGlobal,
         VisualTestContext, WindowHandle, actions,
@@ -4480,6 +4482,7 @@ mod tests {
                 "/settings.json".as_ref(),
                 &r#"{"base_keymap": "Atom"}"#.into(),
                 Default::default(),
+                EncodingWrapper::new(UTF_8),
             )
             .await
             .unwrap();
@@ -4490,6 +4493,7 @@ mod tests {
                 "/keymap.json".as_ref(),
                 &r#"[{"bindings": {"backspace": "test_only::ActionA"}}]"#.into(),
                 Default::default(),
+                EncodingWrapper::new(UTF_8),
             )
             .await
             .unwrap();
@@ -4538,6 +4542,7 @@ mod tests {
                 "/keymap.json".as_ref(),
                 &r#"[{"bindings": {"backspace": "test_only::ActionB"}}]"#.into(),
                 Default::default(),
+                EncodingWrapper::new(UTF_8),
             )
             .await
             .unwrap();
@@ -4558,6 +4563,7 @@ mod tests {
                 "/settings.json".as_ref(),
                 &r#"{"base_keymap": "JetBrains"}"#.into(),
                 Default::default(),
+                EncodingWrapper::new(UTF_8),
             )
             .await
             .unwrap();
@@ -4598,6 +4604,7 @@ mod tests {
                 "/settings.json".as_ref(),
                 &r#"{"base_keymap": "Atom"}"#.into(),
                 Default::default(),
+                EncodingWrapper::new(UTF_8),
             )
             .await
             .unwrap();
@@ -4607,6 +4614,7 @@ mod tests {
                 "/keymap.json".as_ref(),
                 &r#"[{"bindings": {"backspace": "test_only::ActionA"}}]"#.into(),
                 Default::default(),
+                EncodingWrapper::new(UTF_8),
             )
             .await
             .unwrap();
@@ -4650,6 +4658,7 @@ mod tests {
                 "/keymap.json".as_ref(),
                 &r#"[{"bindings": {"backspace": null}}]"#.into(),
                 Default::default(),
+                EncodingWrapper::new(UTF_8),
             )
             .await
             .unwrap();
@@ -4670,6 +4679,7 @@ mod tests {
                 "/settings.json".as_ref(),
                 &r#"{"base_keymap": "JetBrains"}"#.into(),
                 Default::default(),
+                EncodingWrapper::new(UTF_8),
             )
             .await
             .unwrap();
