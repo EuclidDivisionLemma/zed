@@ -1278,7 +1278,8 @@ Each option controls displaying of a particular toolbar element. If all elements
 ```json
 "status_bar": {
   "active_language_button": true,
-  "cursor_position_button": true
+  "cursor_position_button": true,
+  "encoding_indicator": true,
 },
 ```
 

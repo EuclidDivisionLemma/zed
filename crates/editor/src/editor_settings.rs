@@ -136,6 +136,11 @@ pub struct StatusBar {
     ///
     /// Default: true
     pub cursor_position_button: bool,
+
+    /// Whether to show the encoding indicator in the status bar.
+    ///
+    /// Default: true
+    pub encoding_indicator: bool,
 }
 
 #[derive(Copy, Clone, Debug, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
@@ -593,6 +598,10 @@ pub struct StatusBarContent {
     ///
     /// Default: true
     pub cursor_position_button: Option<bool>,
+    /// Whether to show the encoding indicator in the status bar.
+    ///
+    /// Default: true
+    pub encoding_indicator: Option<bool>,
 }
 
 // Toolbar related settings
