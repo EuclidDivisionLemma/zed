@@ -1231,8 +1231,9 @@ async fn build_buffer_diff(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use ::fs::Fs;
+    use ::fs::{Fs, encodings::EncodingWrapper};
     use client::TelemetrySettings;
+    use encoding::all::UTF_8;
     use gpui::{TestAppContext, UpdateGlobal};
     use language_model::fake_provider::FakeLanguageModel;
     use serde_json::json;
@@ -1501,6 +1502,7 @@ mod tests {
             path!("/root/src/main.rs").as_ref(),
             &"initial content".into(),
             language::LineEnding::Unix,
+            EncodingWrapper::new(UTF_8),
         )
         .await
         .unwrap();
@@ -1670,6 +1672,7 @@ mod tests {
             path!("/root/src/main.rs").as_ref(),
             &"initial content".into(),
             language::LineEnding::Unix,
+            EncodingWrapper::new(UTF_8),
         )
         .await
         .unwrap();
