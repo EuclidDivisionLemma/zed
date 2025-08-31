@@ -39,7 +39,7 @@ theme.workspace = true
 thiserror.workspace = true
 util.workspace = true
 regex.workspace = true
-urlencoding_rs.workspace = true
+urlencoding.workspace = true
 workspace-hack.workspace = true
 
 [target.'cfg(windows)'.dependencies]
