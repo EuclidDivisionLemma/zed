@@ -1,13 +1,13 @@
-//! Encoding and decoding utilities using the `encoding` crate.
+//! Encoding and decoding utilities using the `encoding_rs` crate.
 use std::fmt::Debug;
 
 use anyhow::{Error, Result};
-use encoding::Encoding;
+use encoding_rs::Encoding;
 use serde::{Deserialize, de::Visitor};
 
-/// A wrapper around `encoding::Encoding` to implement `Send` and `Sync`.
+/// A wrapper around `encoding_rs::Encoding` to implement `Send` and `Sync`.
 /// Since the reference is static, it is safe to send it across threads.
-pub struct EncodingWrapper(&'static dyn Encoding);
+pub struct EncodingWrapper(&'static Encoding);
 
 impl Debug for EncodingWrapper {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -28,14 +28,14 @@ impl<'vi> Visitor<'vi> for EncodingWrapperVisitor {
 
     fn visit_str<E: serde::de::Error>(self, encoding: &str) -> Result<EncodingWrapper, E> {
         Ok(EncodingWrapper(
-            encoding::label::encoding_from_whatwg_label(encoding)
+            Encoding::for_label(encoding.as_bytes())
                 .ok_or_else(|| serde::de::Error::custom("Invalid Encoding"))?,
         ))
     }
 
     fn visit_string<E: serde::de::Error>(self, encoding: String) -> Result<EncodingWrapper, E> {
         Ok(EncodingWrapper(
-            encoding::label::encoding_from_whatwg_label(&encoding)
+            Encoding::for_label(encoding.as_bytes())
                 .ok_or_else(|| serde::de::Error::custom("Invalid Encoding"))?,
         ))
     }
@@ -66,21 +66,27 @@ impl Clone for EncodingWrapper {
 }
 
 impl EncodingWrapper {
-    pub fn new(encoding: &'static dyn Encoding) -> EncodingWrapper {
+    pub fn new(encoding: &'static Encoding) -> EncodingWrapper {
         EncodingWrapper(encoding)
     }
 
     pub async fn decode(&self, input: Vec<u8>) -> Result<String> {
-        match self.0.decode(&input, encoding::DecoderTrap::Replace) {
-            Ok(v) => Ok(v),
-            Err(e) => Err(Error::msg(e.to_string())),
+        let (cow, _encoding_used, had_errors) = self.0.decode(&input);
+        if had_errors {
+            // Note: encoding_rs doesn't provide detailed error information like the old encoding crate
+            Err(Error::msg("Decoding had errors"))
+        } else {
+            Ok(cow.into_owned())
         }
     }
 
     pub async fn encode(&self, input: String) -> Result<Vec<u8>> {
-        match self.0.encode(&input, encoding::EncoderTrap::Replace) {
-            Ok(v) => Ok(v),
-            Err(e) => Err(Error::msg(e.to_string())),
+        let (cow, _encoding_used, had_errors) = self.0.encode(&input);
+        if had_errors {
+            // Note: encoding_rs doesn't provide detailed error information like the old encoding crate
+            Err(Error::msg("Encoding had errors"))
+        } else {
+            Ok(cow.into_owned())
         }
     }
 }
