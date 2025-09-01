@@ -1,6 +1,6 @@
 use crate::{Entry, EntryKind, Event, PathChange, Worktree, WorktreeModelHandle};
 use anyhow::Result;
-use encoding::all::UTF_8;
+use encoding_rs::UTF_8;
 use fs::{FakeFs, Fs, RealFs, RemoveOptions, encodings::EncodingWrapper};
 use git::GITIGNORE;
 use gpui::{AppContext as _, BackgroundExecutor, BorrowAppContext, Context, Task, TestAppContext};
