@@ -5536,7 +5536,6 @@ dependencies = [
 name = "encodings"
 version = "0.1.0"
 dependencies = [
- "anyhow",
  "editor",
  "encoding_rs",
  "fuzzy",
@@ -6441,7 +6440,6 @@ dependencies = [
  "paths",
  "proto",
  "rope",
- "schemars",
  "serde",
  "serde_json",
  "smol",
