@@ -6,9 +6,9 @@ use agent::{AgentTool, ReadFileTool, ReadFileToolInput, Templates, Thread, ToolC
 use client::{Client, UserStore};
 use clock::FakeSystemClock;
 use collections::{HashMap, HashSet};
-use language_model::{LanguageModelToolResultContent, fake_provider::FakeLanguageModel};
+use encoding_rs::UTF_8;
 use prompt_store::ProjectContext;
-use encoding::all::UTF_8;
+use language_model::{LanguageModelRequest, fake_provider::FakeLanguageModel};
 
 use extension::ExtensionHostProxy;
 use fs::{FakeFs, Fs, encodings::EncodingWrapper};
