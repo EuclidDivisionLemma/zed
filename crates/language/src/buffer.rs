@@ -23,8 +23,8 @@ pub use crate::{
 use anyhow::{Context as _, Result};
 pub use clock::ReplicaId;
 use collections::HashMap;
-use encoding::Encoding;
-use fs::MTime;
+use encoding_rs::Encoding;
+use fs::{MTime, encodings::EncodingWrapper};
 use futures::channel::oneshot;
 use gpui::{
     App, AppContext as _, Context, Entity, EventEmitter, HighlightStyle, SharedString, StyledText,
@@ -418,7 +418,8 @@ pub trait LocalFile: File {
     fn abs_path(&self, cx: &App) -> PathBuf;
 
     /// Loads the file contents from disk and returns them as a UTF-8 encoded string.
-    fn load(&self, cx: &App) -> Task<Result<String>>;
+    fn load(&self, cx: &App, encoding: EncodingWrapper, detect_utf16: bool)
+    -> Task<Result<String>>;
 
     /// Loads the file's contents from disk.
     fn load_bytes(&self, cx: &App) -> Task<Result<Vec<u8>>>;
@@ -1362,12 +1363,15 @@ impl Buffer {
     /// Reloads the contents of the buffer from disk.
     pub fn reload(&mut self, cx: &Context<Self>) -> oneshot::Receiver<Option<Transaction>> {
         let (tx, rx) = futures::channel::oneshot::channel();
+        let encoding = EncodingWrapper::new(*(self.encoding.lock().unwrap()));
 
         let prev_version = self.text.version();
         self.reload_task = Some(cx.spawn(async move |this, cx| {
             let Some((new_mtime, new_text)) = this.update(cx, |this, cx| {
                 let file = this.file.as_ref()?.as_local()?;
-                Some((file.disk_state().mtime(), { file.load(cx) }))
+                Some((file.disk_state().mtime(), {
+                    file.load(cx, encoding, false)
+                }))
             })?
             else {
                 return Ok(());
@@ -5384,7 +5388,12 @@ impl LocalFile for TestFile {
             .join(self.path.as_std_path())
     }
 
-    fn load(&self, _cx: &App) -> Task<Result<String>> {
+    fn load(
+        &self,
+        _cx: &App,
+        _encoding: EncodingWrapper,
+        _detect_utf16: bool,
+    ) -> Task<Result<String>> {
         unimplemented!()
     }
 
