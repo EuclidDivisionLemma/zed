@@ -517,6 +517,8 @@ impl HeadlessProject {
                         path: Arc::<Path>::from_proto(message.payload.path),
                     },
                     None,
+                    false,
+                    true,
                     cx,
                 )
             });
@@ -677,6 +679,8 @@ impl HeadlessProject {
                         path: path,
                     },
                     None,
+                    false,
+                    true,
                     cx,
                 )
             });
