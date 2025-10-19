@@ -10,9 +10,10 @@ use encoding_rs::UTF_8;
 use prompt_store::ProjectContext;
 use language_model::{LanguageModelRequest, fake_provider::FakeLanguageModel};
 
+use encodings::Encoding;
 use extension::ExtensionHostProxy;
-use fs::{FakeFs, Fs, encodings::EncodingWrapper};
-use gpui::{AppContext as _, Entity, SemanticVersion, SharedString, TestAppContext};
+use fs::{FakeFs, Fs};
+use gpui::{AppContext as _, Entity, SemanticVersion, TestAppContext};
 use http_client::{BlockedHttpClient, FakeHttpClient};
 use language::{
     Buffer, FakeLspAdapter, LanguageConfig, LanguageMatcher, LanguageRegistry, LineEnding,
@@ -124,7 +125,7 @@ async fn test_basic_remote_editing(cx: &mut TestAppContext, server_cx: &mut Test
         path!("/code/project1/src/main.rs").as_ref(),
         &"fn main() {}".into(),
         Default::default(),
-        EncodingWrapper::new(UTF_8),
+        Encoding::default(),
     )
     .await
     .unwrap();
@@ -820,7 +821,7 @@ async fn test_remote_reload(cx: &mut TestAppContext, server_cx: &mut TestAppCont
         &PathBuf::from(path!("/code/project1/src/lib.rs")),
         &("bangles".to_string().into()),
         LineEnding::Unix,
-        EncodingWrapper::new(UTF_8),
+        Encoding::default(),
     )
     .await
     .unwrap();
@@ -836,7 +837,7 @@ async fn test_remote_reload(cx: &mut TestAppContext, server_cx: &mut TestAppCont
         &PathBuf::from(path!("/code/project1/src/lib.rs")),
         &("bloop".to_string().into()),
         LineEnding::Unix,
-        EncodingWrapper::new(UTF_8),
+        Encoding::default(),
     )
     .await
     .unwrap();
