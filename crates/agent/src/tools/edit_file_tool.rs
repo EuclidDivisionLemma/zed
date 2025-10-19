@@ -608,8 +608,8 @@ mod tests {
     use super::*;
     use crate::{ContextServerRegistry, Templates};
     use client::TelemetrySettings;
-    use encoding_rs::UTF_8;
-    use fs::{Fs, encodings::EncodingWrapper};
+    use encodings::{Encoding, UTF_8};
+    use fs::Fs;
     use gpui::{TestAppContext, UpdateGlobal};
     use language_model::fake_provider::FakeLanguageModel;
     use prompt_store::ProjectContext;
@@ -789,7 +789,7 @@ mod tests {
             path!("/root/src/main.rs").as_ref(),
             &"initial content".into(),
             language::LineEnding::Unix,
-            EncodingWrapper::new(UTF_8),
+            Encoding::new(UTF_8),
         )
         .await
         .unwrap();
@@ -957,7 +957,7 @@ mod tests {
             path!("/root/src/main.rs").as_ref(),
             &"initial content".into(),
             language::LineEnding::Unix,
-            EncodingWrapper::new(UTF_8),
+            Encoding::default(),
         )
         .await
         .unwrap();
