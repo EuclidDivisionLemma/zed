@@ -19,6 +19,7 @@ use language::{
     Buffer, FakeLspAdapter, LanguageConfig, LanguageMatcher, LanguageRegistry, LineEnding,
     language_settings::{AllLanguageSettings, language_settings},
 };
+use language_model::LanguageModelToolResultContent;
 use lsp::{CompletionContext, CompletionResponse, CompletionTriggerKind, LanguageServerName};
 use node_runtime::NodeRuntime;
 use project::{
