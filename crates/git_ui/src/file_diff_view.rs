@@ -362,7 +362,6 @@ mod tests {
     use gpui::TestAppContext;
     use project::{FakeFs, Fs, Project};
     use settings::SettingsStore;
-    use project::{FakeFs, Fs, Project, encodings::EncodingWrapper};
     use std::path::PathBuf;
     use unindent::unindent;
     use util::path;

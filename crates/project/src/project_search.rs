@@ -471,7 +471,7 @@ impl Search {
                 let mut buffers = buffer_store.update(&mut cx, |this, cx| {
                     requested_paths
                         .into_iter()
-                        .map(|path| this.open_buffer(path, cx))
+                        .map(|path| this.open_buffer(path, None, false, true, cx))
                         .collect::<FuturesOrdered<_>>()
                 })?;
 
@@ -537,7 +537,6 @@ impl Search {
         })
         .await;
     }
-
     fn all_loaded_buffers(&self, search_query: &SearchQuery, cx: &App) -> Vec<Entity<Buffer>> {
         let worktree_store = self.worktree_store.read(cx);
         let mut buffers = search_query
@@ -699,7 +698,6 @@ impl RequestHandler<'_> {
 
         _ = report_matches.send((buffer, ranges)).await;
     }
-
     async fn handle_find_first_match(&self, mut entry: MatchingEntry) {
         _=maybe!(async move {
             let abs_path = entry.worktree_root.join(entry.path.path.as_std_path());
