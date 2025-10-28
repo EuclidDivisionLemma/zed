@@ -511,7 +511,7 @@ impl HeadlessProject {
         let (buffer_store, buffer) = this.update(&mut cx, |this, cx| {
             let buffer_store = this.buffer_store.clone();
             let buffer = this.buffer_store.update(cx, |buffer_store, cx| {
-                buffer_store.open_buffer(ProjectPath { worktree_id, path }, None, false, true, cx)
+                buffer_store.open_buffer(ProjectPath { worktree_id, path }, &Default::default(), cx)
             });
             anyhow::Ok((buffer_store, buffer))
         })??;
@@ -667,9 +667,7 @@ impl HeadlessProject {
                         worktree_id: worktree.read(cx).id(),
                         path: path,
                     },
-                    None,
-                    false,
-                    true,
+                    &Default::default(),
                     cx,
                 )
             });
