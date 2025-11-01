@@ -732,8 +732,8 @@ async fn test_write_file(cx: &mut TestAppContext) {
                 rel_path("tracked-dir/file.txt").into(),
                 "hello".into(),
                 Default::default(),
-                cx,
                 Default::default(),
+                cx,
             )
         })
         .await
@@ -744,8 +744,8 @@ async fn test_write_file(cx: &mut TestAppContext) {
                 rel_path("ignored-dir/file.txt").into(),
                 "world".into(),
                 Default::default(),
-                cx,
                 Default::default(),
+                cx,
             )
         })
         .await
