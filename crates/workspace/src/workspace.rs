@@ -7656,7 +7656,9 @@ pub fn create_and_open_local_file(
             fs.create_file(path, Default::default()).await?;
             fs.save(
                 path,
-                &default_content(),
+                &default_content(cx),
+
+
                 Default::default(),
                 Default::default(),
             )
