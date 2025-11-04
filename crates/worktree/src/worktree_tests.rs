@@ -468,7 +468,6 @@ async fn test_open_gitignored_files(cx: &mut TestAppContext) {
             tree.load_file(
                 rel_path("one/node_modules/b/b1.js"),
                 &Default::default(),
-                None,
                 cx,
             )
         })
@@ -513,7 +512,6 @@ async fn test_open_gitignored_files(cx: &mut TestAppContext) {
             tree.load_file(
                 rel_path("one/node_modules/a/a2.js"),
                 &Default::default(),
-                None,
                 cx,
             )
         })
@@ -1867,8 +1865,8 @@ fn randomly_mutate_worktree(
                     entry.path.clone(),
                     Rope::default(),
                     Default::default(),
-                    cx,
                     Default::default(),
+                    cx,
                 );
                 cx.background_spawn(async move {
                     task.await?;
