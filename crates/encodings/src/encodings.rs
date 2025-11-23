@@ -10,14 +10,19 @@ pub use encoding_rs::{
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct Encoding {
-    pub encoding: &'static encoding_rs::Encoding,
-    pub with_bom: bool,
+pub enum Encoding {
+    /// All the standard encodings that are in `encoding_rs`
+    Standard {
+        encoding: &'static encoding_rs::Encoding,
+        with_bom: bool,
+    },
+    /// The fallback encoding
+    Binary,
 }
 
 impl Default for Encoding {
     fn default() -> Self {
-        Encoding {
+        Encoding::Standard {
             encoding: UTF_8,
             with_bom: false,
         }
@@ -26,105 +31,125 @@ impl Default for Encoding {
 
 impl Encoding {
     pub fn decode(&self, input: Vec<u8>) -> anyhow::Result<String> {
-        if self.encoding == UTF_8 && !self.with_bom {
-            return Ok(String::from_utf8(input)?);
-        }
-        let Some(result) = self
-            .encoding
-            .decode_without_bom_handling_and_without_replacement(&input)
-        else {
-            return Err(anyhow::anyhow!(
-                "input is not valid {}",
-                self.encoding.name()
-            ));
-        };
+        match self {
+            Encoding::Standard { encoding, with_bom } => {
+                if *encoding == UTF_8 && !with_bom {
+                    return Ok(String::from_utf8(input)?);
+                }
+                let Some(result) =
+                    encoding.decode_without_bom_handling_and_without_replacement(&input)
+                else {
+                    return Err(anyhow::anyhow!("input is not valid {}", encoding.name()));
+                };
 
-        if self.with_bom && result.starts_with("\u{FEFF}") {
-            Ok(result[3..].to_string())
-        } else {
-            Ok(result.into_owned())
+                if *with_bom && result.starts_with("\u{FEFF}") {
+                    Ok(result[3..].to_string())
+                } else {
+                    Ok(result.into_owned())
+                }
+            }
+            Encoding::Binary => Ok(input.into_iter().map(|ch| ch as char).collect::<String>()),
         }
     }
 
     pub fn bom(&self) -> Option<&'static [u8]> {
-        if !self.with_bom {
-            return None;
-        }
-        if self.encoding == UTF_8 {
-            Some(&[0xEF, 0xBB, 0xBF])
-        } else if self.encoding == UTF_16BE {
-            Some(&[0xFE, 0xFF])
-        } else if self.encoding == UTF_16LE {
-            Some(&[0xFF, 0xFE])
-        } else {
-            None
+        match self {
+            Encoding::Standard { encoding, with_bom } => {
+                if !with_bom {
+                    return None;
+                }
+                if *encoding == UTF_8 {
+                    Some(&[0xEF, 0xBB, 0xBF])
+                } else if *encoding == UTF_16BE {
+                    Some(&[0xFE, 0xFF])
+                } else if *encoding == UTF_16LE {
+                    Some(&[0xFF, 0xFE])
+                } else {
+                    None
+                }
+            }
+            Encoding::Binary => None,
         }
     }
 
     pub fn encode_chunk<'a>(&self, input: &'a str) -> anyhow::Result<Cow<'a, [u8]>> {
-        if self.encoding == UTF_8 {
-            Ok(Cow::Borrowed(input.as_bytes()))
-        } else if self.encoding == UTF_16BE {
-            let mut data = Vec::<u8>::with_capacity(input.len() * 2);
+        match self {
+            Encoding::Standard {
+                encoding,
+                with_bom: _,
+            } => {
+                if *encoding == UTF_8 {
+                    Ok(Cow::Borrowed(input.as_bytes()))
+                } else if *encoding == UTF_16BE {
+                    let mut data = Vec::<u8>::with_capacity(input.len() * 2);
 
-            // Convert the input string to UTF-16BE bytes
-            let utf16be_bytes = input.encode_utf16().flat_map(|u| u.to_be_bytes());
+                    // Convert the input string to UTF-16BE bytes
+                    let utf16be_bytes = input.encode_utf16().flat_map(|u| u.to_be_bytes());
 
-            data.extend(utf16be_bytes);
-            Ok(Cow::Owned(data))
-        } else if self.encoding == UTF_16LE {
-            let mut data = Vec::<u8>::with_capacity(input.len() * 2);
+                    data.extend(utf16be_bytes);
+                    Ok(Cow::Owned(data))
+                } else if *encoding == UTF_16LE {
+                    let mut data = Vec::<u8>::with_capacity(input.len() * 2);
 
-            // Convert the input string to UTF-16LE bytes
-            let utf16le_bytes = input.encode_utf16().flat_map(|u| u.to_le_bytes());
+                    // Convert the input string to UTF-16LE bytes
+                    let utf16le_bytes = input.encode_utf16().flat_map(|u| u.to_le_bytes());
 
-            data.extend(utf16le_bytes);
-            Ok(Cow::Owned(data))
-        } else {
-            // todo: should we error on invalid content when encoding?
-            let (cow, _encoding_used, _had_errors) = self.encoding.encode(&input);
+                    data.extend(utf16le_bytes);
+                    Ok(Cow::Owned(data))
+                } else {
+                    // todo: should we error on invalid content when encoding?
+                    let (cow, _encoding_used, _had_errors) = encoding.encode(&input);
 
-            Ok(cow)
+                    Ok(cow)
+                }
+            }
+            Encoding::Binary => Ok(Cow::Owned(
+                input.chars().map(|ch| ch as u8).collect::<Vec<u8>>(),
+            )),
         }
     }
 
     pub fn name(&self) -> &'static str {
-        let name = self.encoding.name();
-
-        match name {
-            "UTF-8" => "UTF-8",
-            "UTF-16LE" => "UTF-16 LE",
-            "UTF-16BE" => "UTF-16 BE",
-            "windows-1252" => "Windows-1252",
-            "windows-1251" => "Windows-1251",
-            "windows-1250" => "Windows-1250",
-            "ISO-8859-2" => "ISO 8859-2",
-            "ISO-8859-3" => "ISO 8859-3",
-            "ISO-8859-4" => "ISO 8859-4",
-            "ISO-8859-5" => "ISO 8859-5",
-            "ISO-8859-6" => "ISO 8859-6",
-            "ISO-8859-7" => "ISO 8859-7",
-            "ISO-8859-8" => "ISO 8859-8",
-            "ISO-8859-13" => "ISO 8859-13",
-            "ISO-8859-15" => "ISO 8859-15",
-            "KOI8-R" => "KOI8-R",
-            "KOI8-U" => "KOI8-U",
-            "macintosh" => "MacRoman",
-            "x-mac-cyrillic" => "Mac Cyrillic",
-            "windows-874" => "Windows-874",
-            "windows-1253" => "Windows-1253",
-            "windows-1254" => "Windows-1254",
-            "windows-1255" => "Windows-1255",
-            "windows-1256" => "Windows-1256",
-            "windows-1257" => "Windows-1257",
-            "windows-1258" => "Windows-1258",
-            "EUC-KR" => "Windows-949",
-            "EUC-JP" => "EUC-JP",
-            "ISO-2022-JP" => "ISO 2022-JP",
-            "GBK" => "GBK",
-            "gb18030" => "GB18030",
-            "Big5" => "Big5",
-            _ => name,
+        match self {
+            Encoding::Standard {
+                encoding,
+                with_bom: _,
+            } => match encoding.name() {
+                "UTF-8" => "UTF-8",
+                "UTF-16LE" => "UTF-16 LE",
+                "UTF-16BE" => "UTF-16 BE",
+                "windows-1252" => "Windows-1252",
+                "windows-1251" => "Windows-1251",
+                "windows-1250" => "Windows-1250",
+                "ISO-8859-2" => "ISO 8859-2",
+                "ISO-8859-3" => "ISO 8859-3",
+                "ISO-8859-4" => "ISO 8859-4",
+                "ISO-8859-5" => "ISO 8859-5",
+                "ISO-8859-6" => "ISO 8859-6",
+                "ISO-8859-7" => "ISO 8859-7",
+                "ISO-8859-8" => "ISO 8859-8",
+                "ISO-8859-13" => "ISO 8859-13",
+                "ISO-8859-15" => "ISO 8859-15",
+                "KOI8-R" => "KOI8-R",
+                "KOI8-U" => "KOI8-U",
+                "macintosh" => "MacRoman",
+                "x-mac-cyrillic" => "Mac Cyrillic",
+                "windows-874" => "Windows-874",
+                "windows-1253" => "Windows-1253",
+                "windows-1254" => "Windows-1254",
+                "windows-1255" => "Windows-1255",
+                "windows-1256" => "Windows-1256",
+                "windows-1257" => "Windows-1257",
+                "windows-1258" => "Windows-1258",
+                "EUC-KR" => "Windows-949",
+                "EUC-JP" => "EUC-JP",
+                "ISO-2022-JP" => "ISO 2022-JP",
+                "GBK" => "GBK",
+                "gb18030" => "GB18030",
+                "Big5" => "Big5",
+                _ => encoding.name(),
+            },
+            Encoding::Binary => "Latin-1 (Binary)",
         }
     }
 
@@ -162,10 +187,11 @@ impl Encoding {
             "GBK" => encoding_rs::GBK,
             "GB18030" => encoding_rs::GB18030,
             "Big5" => encoding_rs::BIG5,
+            "Latin-1 (Binary)" => return Encoding::Binary,
             _ => encoding_rs::UTF_8, // Default to UTF-8 for unknown names
         };
 
-        Encoding {
+        Encoding::Standard {
             encoding,
             with_bom: false,
         }
@@ -193,17 +219,17 @@ impl EncodingOptions {
 
     fn detect(bytes: &[u8]) -> Option<Encoding> {
         if bytes.starts_with(&[0xFE, 0xFF]) {
-            Some(Encoding {
-                encoding: UTF_8,
+            Some(Encoding::Standard {
+                encoding: UTF_16BE,
                 with_bom: true,
             })
         } else if bytes.starts_with(&[0xFF, 0xFE]) {
-            Some(Encoding {
+            Some(Encoding::Standard {
                 encoding: UTF_16LE,
                 with_bom: true,
             })
         } else if bytes.starts_with(&[0xEF, 0xBB, 0xBF]) {
-            Some(Encoding {
+            Some(Encoding::Standard {
                 encoding: UTF_8,
                 with_bom: true,
             })
