@@ -1,13 +1,10 @@
 use anyhow::Result;
 use editor::Editor;
-use encodings::Encoding;
-use encodings::EncodingOptions;
+use encodings::{Encoding, EncodingOptions};
 use futures::channel::oneshot;
-use gpui::ParentElement;
-use gpui::Task;
+
 use language::Buffer;
-use picker::Picker;
-use picker::PickerDelegate;
+use picker::{Picker, PickerDelegate};
 use std::path::Path;
 use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
@@ -17,7 +14,7 @@ use ui::rems;
 use util::ResultExt;
 
 use fuzzy::{StringMatch, StringMatchCandidate};
-use gpui::{DismissEvent, Entity, WeakEntity};
+use gpui::{DismissEvent, Entity, ParentElement, Task, WeakEntity};
 
 use ui::{Context, HighlightedLabel, ListItem, Window};
 use workspace::Workspace;
@@ -291,6 +288,7 @@ impl EncodingSelectorDelegate {
             StringMatchCandidate::new(29, "GBK"),
             StringMatchCandidate::new(30, "GB18030"),
             StringMatchCandidate::new(31, "Big5"),
+            StringMatchCandidate::new(32, "Latin-1 (Binary)"),
         ];
         let current_selection = if let Some(encoding) = encoding {
             encodings
