@@ -5305,7 +5305,7 @@ impl Project {
                     let line_ending = text::LineEnding::detect(&new_text);
                     worktree.write_file(
                         rel_path.clone(),
-                        Rope::from_str(&new_text, cx.background_executor()),
+                        Rope::from(&new_text),
                         line_ending,
                         Encoding::default(),
                         cx,

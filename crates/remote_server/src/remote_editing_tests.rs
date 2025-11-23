@@ -6,9 +6,7 @@ use agent::{AgentTool, ReadFileTool, ReadFileToolInput, Templates, Thread, ToolC
 use client::{Client, UserStore};
 use clock::FakeSystemClock;
 use collections::{HashMap, HashSet};
-use encoding_rs::UTF_8;
 use prompt_store::ProjectContext;
-use language_model::{LanguageModelRequest, fake_provider::FakeLanguageModel};
 
 use encodings::Encoding;
 use extension::ExtensionHostProxy;
@@ -19,7 +17,7 @@ use language::{
     Buffer, FakeLspAdapter, LanguageConfig, LanguageMatcher, LanguageRegistry, LineEnding,
     language_settings::{AllLanguageSettings, language_settings},
 };
-use language_model::LanguageModelToolResultContent;
+use language_model::{LanguageModelToolResultContent, fake_provider::FakeLanguageModel};
 use lsp::{CompletionContext, CompletionResponse, CompletionTriggerKind, LanguageServerName};
 use node_runtime::NodeRuntime;
 use project::{
@@ -1792,6 +1790,7 @@ async fn test_remote_agent_fs_tool_calls(cx: &mut TestAppContext, server_cx: &mu
     let context_server_registry =
         cx.new(|cx| agent::ContextServerRegistry::new(project.read(cx).context_server_store(), cx));
     let model = Arc::new(FakeLanguageModel::default());
+
     let thread = cx.new(|cx| {
         Thread::new(
             project.clone(),

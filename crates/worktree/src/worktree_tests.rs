@@ -10,7 +10,6 @@ use rand::prelude::*;
 
 use serde_json::json;
 use settings::SettingsStore;
-use text::Rope;
 use std::{
     env,
     fmt::Write,
@@ -18,6 +17,7 @@ use std::{
     path::{Path, PathBuf},
     sync::Arc,
 };
+use text::Rope;
 use util::{
     ResultExt, path,
     rel_path::{RelPath, rel_path},
@@ -652,10 +652,9 @@ async fn test_dirs_no_longer_ignored(cx: &mut TestAppContext) {
 
     // Update the gitignore so that node_modules is no longer ignored,
     // but a subdirectory is ignored
-    let encoding_wrapper = EncodingWrapper::new(UTF_8);
     fs.save(
         "/root/.gitignore".as_ref(),
-        &Rope::from_str("e", cx.background_executor()),
+        &Rope::from("e"),
         Default::default(),
         Default::default(),
     )

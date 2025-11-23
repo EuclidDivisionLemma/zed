@@ -10,6 +10,7 @@ use std::{
 
 use anyhow::Context;
 use collections::HashSet;
+use encodings::EncodingOptions;
 use fs::Fs;
 use futures::{SinkExt, StreamExt, select_biased, stream::FuturesOrdered};
 use gpui::{App, AppContext, AsyncApp, Entity, Task};
@@ -471,7 +472,7 @@ impl Search {
                 let mut buffers = buffer_store.update(&mut cx, |this, cx| {
                     requested_paths
                         .into_iter()
-                        .map(|path| this.open_buffer(path, None, false, true, cx))
+                        .map(|path| this.open_buffer(path, &EncodingOptions::default(), cx))
                         .collect::<FuturesOrdered<_>>()
                 })?;
 

@@ -22,7 +22,8 @@ pub use crate::{
 };
 use anyhow::{Context as _, Result};
 pub use clock::ReplicaId;
-use collections::HashMap;
+use clock::{Global, Lamport};
+use collections::{HashMap, HashSet};
 use encodings::{Encoding, EncodingOptions};
 use fs::MTime;
 use futures::channel::oneshot;
@@ -130,7 +131,30 @@ pub struct Buffer {
     has_unsaved_edits: Cell<(clock::Global, bool)>,
     change_bits: Vec<rc::Weak<Cell<bool>>>,
     _subscriptions: Vec<gpui::Subscription>,
+    tree_sitter_data: Arc<Mutex<TreeSitterData>>,
     encoding: Encoding,
+}
+
+#[derive(Debug, Clone)]
+pub struct TreeSitterData {
+    chunks: RowChunks,
+    brackets_by_chunks: Vec<Option<Vec<BracketMatch<usize>>>>,
+}
+
+const MAX_ROWS_IN_A_CHUNK: u32 = 50;
+
+impl TreeSitterData {
+    fn clear(&mut self) {
+        self.brackets_by_chunks = vec![None; self.chunks.len()];
+    }
+
+    fn new(snapshot: text::BufferSnapshot) -> Self {
+        let chunks = RowChunks::new(snapshot, MAX_ROWS_IN_A_CHUNK);
+        Self {
+            brackets_by_chunks: vec![None; chunks.len()],
+            chunks,
+        }
+    }
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]

@@ -11,7 +11,7 @@ use async_compression::futures::bufread::GzipDecoder;
 use async_tar::Archive;
 use client::ExtensionProvides;
 use client::{Client, ExtensionMetadata, GetExtensionsResponse, proto, telemetry::Telemetry};
-use collections::{BTreeMap, BTreeSet, HashMap, HashSet, btree_map};
+use collections::{BTreeMap, BTreeSet, HashSet, btree_map};
 use encodings::Encoding;
 pub use extension::ExtensionManifest;
 use extension::extension_builder::{CompileExtensionOptions, ExtensionBuilder};
@@ -1502,7 +1502,7 @@ impl ExtensionStore {
             if let Ok(index_json) = serde_json::to_string_pretty(&index) {
                 fs.save(
                     &index_path,
-                    &Rope::from_str(&index_json, &executor),
+                    &Rope::from(&index_json),
                     Default::default(),
                     Encoding::default(),
                 )
