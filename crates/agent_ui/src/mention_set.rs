@@ -10,6 +10,7 @@ use editor::{
     display_map::{Crease, CreaseId, CreaseMetadata, FoldId},
     scroll::Autoscroll,
 };
+use encodings::EncodingOptions;
 use futures::{AsyncReadExt as _, FutureExt as _, future::Shared};
 use gpui::{
     Animation, AnimationExt as _, AppContext, ClipboardEntry, Context, Empty, Entity, EntityId,
@@ -852,7 +853,7 @@ fn full_mention_for_directory(
                             worktree_id,
                             path: worktree_path,
                         };
-                        buffer_store.open_buffer(project_path, cx)
+                        buffer_store.open_buffer(project_path, &EncodingOptions::default(), cx)
                     })
                 });
 

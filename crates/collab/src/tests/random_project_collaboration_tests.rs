@@ -1,4 +1,5 @@
 use super::{RandomizedTest, TestClient, TestError, TestServer, UserTestPlan};
+
 use crate::{db::UserId, tests::run_randomized_test};
 use anyhow::{Context as _, Result};
 use async_trait::async_trait;
@@ -941,7 +942,7 @@ impl RandomizedTest for ProjectCollaborationTest {
                         .fs()
                         .save(
                             &path,
-                            &Rope::from_str_small(content.as_str()),
+                            &content.as_str().into(),
                             text::LineEnding::Unix,
                             Encoding::default(),
                         )

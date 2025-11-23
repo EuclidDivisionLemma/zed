@@ -1472,10 +1472,7 @@ impl LocalWorktree {
         let write = cx.background_spawn({
             let fs = fs.clone();
             let abs_path = abs_path.clone();
-            {
-                let encoding = encoding.clone();
-                async move { fs.save(&abs_path, &text, line_ending, encoding).await }
-            }
+            async move { fs.save(&abs_path, &text, line_ending, encoding).await }
         });
 
         cx.spawn(async move |this, cx| {

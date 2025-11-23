@@ -7,8 +7,6 @@ use anyhow::{Context as _, Result, anyhow};
 use client::Client;
 use collections::{HashMap, HashSet, hash_map};
 use encodings::EncodingOptions;
-use fs::Fs;
-use futures::StreamExt;
 use futures::{Future, FutureExt as _, channel::oneshot, future::Shared};
 use gpui::{
     App, AppContext as _, AsyncApp, Context, Entity, EventEmitter, Subscription, Task, WeakEntity,
@@ -382,7 +380,7 @@ impl LocalBufferStore {
         let version = buffer.version();
         let buffer_id = buffer.remote_id();
         let file = buffer.file().cloned();
-        let encoding = buffer.encoding().clone();
+        let encoding = buffer.encoding();
 
         if file
             .as_ref()
@@ -633,19 +631,14 @@ impl LocalBufferStore {
 
             cx.spawn(async move |_, cx| {
                 let loaded_file = load_file_task.await?;
-                let background_executor = cx.background_executor().clone();
 
                 let buffer = cx.insert_entity(reservation, |cx| {
                     let mut buffer = Buffer::build(
-                        text::Buffer::new(
-                            ReplicaId::LOCAL,
-                            buffer_id,
-                            loaded_file.text,
-                            &background_executor,
-                        ),
+                        text::Buffer::new(ReplicaId::LOCAL, buffer_id, loaded_file.text),
                         Some(loaded_file.file),
                         Capability::ReadWrite,
                     );
+
                     buffer.set_encoding(loaded_file.encoding, cx);
                     buffer
                 })?;

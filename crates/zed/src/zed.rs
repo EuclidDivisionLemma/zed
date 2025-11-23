@@ -2253,7 +2253,9 @@ mod tests {
     use super::*;
     use assets::Assets;
     use collections::HashSet;
-    use editor::{DisplayPoint, Editor, SelectionEffects, display_map::DisplayRow};
+    use editor::{
+        DisplayPoint, Editor, MultiBufferOffset, SelectionEffects, display_map::DisplayRow,
+    };
     use encodings::Encoding;
 
     use gpui::{
