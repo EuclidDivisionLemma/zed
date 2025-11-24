@@ -103,9 +103,20 @@ impl Encoding {
                     Ok(cow)
                 }
             }
-            Encoding::Binary => Ok(Cow::Owned(
-                input.chars().map(|ch| ch as u8).collect::<Vec<u8>>(),
-            )),
+            Encoding::Binary => input
+                .chars()
+                .map(|ch| {
+                    if (0x00..=0xff).contains(&(ch as u32)) {
+                        Ok(ch as u8)
+                    } else {
+                        anyhow::bail!(
+                            "Character {} is not in the range U+0000 to U+00FF for binary encoding",
+                            ch
+                        );
+                    }
+                })
+                .collect::<anyhow::Result<Vec<u8>>>()
+                .and_then(|v| Ok(Cow::Owned(v))),
         }
     }
 
