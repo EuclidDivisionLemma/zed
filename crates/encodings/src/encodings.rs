@@ -116,7 +116,7 @@ impl Encoding {
                     }
                 })
                 .collect::<anyhow::Result<Vec<u8>>>()
-                .and_then(|v| Ok(Cow::Owned(v))),
+                .map(|v| Cow::Owned(v)),
         }
     }
 
